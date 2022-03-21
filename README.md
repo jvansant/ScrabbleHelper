@@ -8,3 +8,11 @@ Up to 7 letters can be input by user.
 All words that can be made using input letters are then returned in an ordered list. 
 
 ![](demo.gif)
+
+
+
+## App Startup
+- install python https://www.python.org/downloads/
+- install pip https://pip.pypa.io/en/stable/installation/
+- create a python virtual environment, activate it, and install flask and Flask-Table https://flask.palletsprojects.com/en/2.0.x/installation/ https://pypi.org/project/Flask-Table/
+- run flask app: 'flask run' https://flask.palletsprojects.com/en/2.0.x/quickstart/
