@@ -1,14 +1,52 @@
+from __future__ import unicode_literals
 from flask import Flask, request, render_template, make_response
-from flask_table import Table, Col
 from flask import Markup
 
 
 app = Flask(__name__)
+    
+
+@app.route('/', methods=['GET','POST'])
+def make_sheet():
+    if request.method=="GET":
+        return render_template('scrabble_input.html')
+    else:
+        letters=[]
+        letters.append(request.form['let'])
+        letters.append(request.form['let1'])
+        letters.append(request.form['let2'])
+        letters.append(request.form['let3'])
+        letters.append(request.form['let4'])
+        letters.append(request.form['let5'])
+        letters.append(request.form['let6'])
+
+        if letters.count("*")>1:
+            return render_template('scrabble_input.html', jerrormsg="**Cannot use wild-card * more than once**")#all=words)
+        
+        checked=request.form.get('checked')
+        exist=request.form.get('prior')
+        language=request.form.get('lang')
+        if not checked:
+            exist=""
+
+        
+        try:
+            valueDict, lenDict = getWords(language, letters, exist)
+        except KeyError:
+            return render_template('scrabble_input.html', jerrormsg="**Only letters a-z allowed**")#all=words)
+
+        
+        if len(valueDict)<1:
+            return render_template('scrabble_input.html', jletters=letters, jgiven=exist, jlanguage=language, jerrormsg="**Nothing Found**")#all=words)
+        
+        table=makeTable(valueDict, lenDict)
+        
+
+        return render_template('table.html', jletters=letters, jgiven=exist, jlanguage=language, tinside=table)#all=words)
 
 
-@app.route('/')#initial GET route
-def main():
-    return render_template('index.html', title = "scrabble3000")#renders
+    
+
 
 def getWords(language, inputLetters, givenWord):#takes in full dictionary and user input to return a list of words that can be made.
     ogDictionary=createDict(language)#will only be used to make dictionary{}
@@ -16,13 +54,17 @@ def getWords(language, inputLetters, givenWord):#takes in full dictionary and us
     s=givenWord
     for l in inputLetters:
         s+=l
-    for let in s:#Add latter given word in case there are words that start with those letters
-        dictionary[let] = actualDictionary[let]
+    if "*" in s:
+        dictionary=ogDictionary
+    else:        
+        for let in s:#ADD LATTER GIVEN WORD IN CASE THERE ARE WORDS THAT START WITH THOSE LETTERS
+            dictionary[let] = ogDictionary[let]
 
-    result = []
-    if(givenWord==""):#if there is no given woord
+    if(not givenWord):
+        result = {}
         for letter in dictionary:
             for dictWord in dictionary[letter]:
+                sub=0
                 #Loops through each word while it is using valid letters
                 #Reset letters each time a new word is checked
                 letters = inputLetters.copy()
@@ -34,6 +76,7 @@ def getWords(language, inputLetters, givenWord):#takes in full dictionary and us
                 #Checks if there is a wildcard left
                         if("*" in letters):
                             letters.remove("*")
+                            sub=addLetters(dictWord[j])
                         else:
                             invalid = True
                     else:
@@ -66,6 +109,7 @@ def getWords(language, inputLetters, givenWord):#takes in full dictionary and us
                 letters = inputLetters.copy()
                 invalid = False
                 j = 0
+                sub=0
 
             #Finds the index of the given word of the current dictWord
                 indexOfDictWord = dictWord.find(givenWord)
@@ -82,6 +126,7 @@ def getWords(language, inputLetters, givenWord):#takes in full dictionary and us
                         #Checks if there is a wildcard left
                             if("*" in letters):
                                 letters.remove("*")
+                                sub=addLetters(dictWord[j])
                             else:
                                 invalid = True
                         else:
@@ -90,25 +135,24 @@ def getWords(language, inputLetters, givenWord):#takes in full dictionary and us
 
             #Adds the word to the list if it never used invalid characters
                 if(not invalid):
-                    result += [dictWord]
+                    result[dictWord]=sub
 
-        result.remove(givenWord)
-
-    if(result == []):
-        result = ["**Nothing Found**"]
-
-        # words=""
-    valueDict={}
-    lenDict={}
-    for word in result:
-        # words=words+w+" "
-        value=addLetterValues(word)
-        valueDict[word]=value
-        length=len(word)
-        lenDict[word]=length
+        try:
+            del result[givenWord]
+        except:
+            print("nogiven")
 
 
-    return valueDict, lenDict
+        valueDict={}
+        lenDict={}
+        for w in result:
+            if len(w)>1:
+                value=addLetters(w)-result[w]
+                valueDict[w]=value
+                length=len(w)
+                lenDict[w]=length
+
+        return valueDict, lenDict
 
 
 def createDictDict():
@@ -143,67 +187,66 @@ def createDict(language):
     return dictDict
 
 
-def addLetterValues(word):
+def addLetters(word):
+    letterValues = {
+        "a":1,
+        "b":3,
+        "c":3,
+        "d":2,
+        "e":1,
+        "f":4,
+        "g":2,
+        "h":4,
+        "i":1,
+        "j":8,
+        "k":5,
+        "l":1,
+        "m":3,
+        "n":1,
+        "o":1,
+        "p":3,
+        "q":10,
+        "r":1,
+        "s":1,
+        "t":1,
+        "u":1,
+        "v":4,
+        "w":4,
+        "x":8,
+        "y":4,
+        "z":10,
+        "\'":0,
+        "*":0,
+        "å":1,
+        "é":1,
+        "ñ":1,
+        "ö":1,
+        "ê":1,
+        "ô":1,
+        "ü":1,
+        "è":1,
+        "â":1,
+        "ó":1,
+        }
     s = 0
     for i in word:
         s += letterValues[i]
     return s
     
 
-def tableSorted(sortByDic):
-    return sorted(sortByDic.items(), key=lambda kv:(kv[1], kv[0]), reverse=True)
+# def sortDic(sortByDic):
+#     return sorted(sortByDic.items(), key=lambda kv:(kv[1], kv[0]), reverse=True)
 
-def makeValueSortedTable(valueDic, lengthDic):
+
+def makeTable(valueDic, lengthDic):
     master=""
-    for i in tableSorted(valueDic):
+    for i in valueDic:
         master+='''<tr>
         <td>{}</td>
         <td>{}</td>
         <td>{}</td>
-        </tr>'''.format(i[0], str(lengthDic[i[0]]), str(i[1]))#format(i, str(length), str(value))
-    sortedTable=Markup(master)
-    return sortedTable
+        </tr>'''.format(i, lengthDic[i], valueDic[i])#format(i, str(length), str(value))
+    table=Markup(master)
+    return table
 
 
-def makeLengthSortedTable(valueDic, lengthDic):
-    master=""
-    for i in tableSorted(lengthDic):
-        master+='''<tr>
-        <td>{}</td>
-        <td>{}</td>
-        <td>{}</td>
-        </tr>'''.format(i[0], str(i[1]), str(valueDic[i[0]]))#format(i, str(length), str(value))
-    sortedTable=Markup(master)
-    return sortedTable
-
-
-
-letterValues = {
-    "a":1,
-    "b":3,
-    "c":3,
-    "d":2,
-    "e":1,
-    "f":4,
-    "g":2,
-    "h":4,
-    "i":1,
-    "j":8,
-    "k":5,
-    "l":1,
-    "m":3,
-    "n":1,
-    "o":1,
-    "p":3,
-    "q":10,
-    "r":1,
-    "s":1,
-    "t":1,
-    "u":1,
-    "v":4,
-    "w":4,
-    "x":8,
-    "y":4,
-    "z":10,
-    "*":0
-    }
