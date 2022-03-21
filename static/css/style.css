@@ -1,0 +1,53 @@
+table{
+  margin:50px;
+}
+
+#letterinput{
+  width:100%;
+}
+
+.letinp{
+  float:left;
+  width:5%;
+  margin:5%;
+}
+
+/* .letinpl{
+  margin-top:10px;
+  float:left;
+  width:5%;
+  margin-right:6%;
+} */
+
+#givenWord{
+  margin:10px;
+  float:left;
+  width:20%;
+
+}
+
+#line{
+  display:block;
+  text-align: center;
+  margin-top:50px;
+}
+
+#ch{
+  margin-left:6%;
+}
+
+input{
+  margin:3%;
+}
+
+input[type=checkbox], input[type=radio] {
+  box-sizing: border-box;
+  padding: 0;
+  margin-left: 8.3%;
+  margin-right: 9%;
+}
+
+h4{
+  text-align: center;
+  margin-top:25%;
+}
