@@ -11,6 +11,8 @@ def make_sheet():
     if request.method=="GET":
         return render_template('scrabble_input.html')
     else:
+
+        #parse user input
         letters=[]
         letters.append(request.form['let'])
         letters.append(request.form['let1'])
@@ -27,21 +29,23 @@ def make_sheet():
         exist=request.form.get('prior')
         language=request.form.get('lang')
         if not checked:
-            exist=""
+            exist=""#set existing letters to null if not checked
 
         
+
         try:
-            valueDict, lenDict = getWords(language, letters, exist)
+            valueDict, lenDict = getWords(language, letters, exist)#call getWords. returns dictionary of words and calculated values and a dictionary of words and lengths.
         except KeyError:
             return render_template('scrabble_input.html', jerrormsg="**Only letters a-z allowed**")#all=words)
 
         
-        if len(valueDict)<1:
-            return render_template('scrabble_input.html', jletters=letters, jgiven=exist, jlanguage=language, jerrormsg="**Nothing Found**")#all=words)
+        if len(valueDict)<1:#no words made
+            return render_template('scrabble_input.html', jletters=letters, jgiven=exist, jlanguage=language, jerrormsg="**Nothing Found**")
         
         table=makeTable(valueDict, lenDict)
         
 
+        #render jinja template
         return render_template('table.html', jletters=letters, jgiven=exist, jlanguage=language, tinside=table)#all=words)
 
 
@@ -232,11 +236,6 @@ def addLetters(word):
     for i in word:
         s += letterValues[i]
     return s
-    
-
-# def sortDic(sortByDic):
-#     return sorted(sortByDic.items(), key=lambda kv:(kv[1], kv[0]), reverse=True)
-
 
 def makeTable(valueDic, lengthDic):
     master=""
