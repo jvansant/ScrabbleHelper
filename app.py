@@ -49,8 +49,6 @@ def make_sheet():
 
 
 def getWords(language, inputLetters, givenWord):#takes in full dictionary and user input to return a list of words that can be made.
-#word from the dictionary dictWord
-#givenWord = "CAT"
     ogDictionary=createDict(language)#will only be used to make dictionary{}
     dictionary={}#made to only contain letters that are given--MORE EFFICIENT
     s=givenWord
@@ -103,7 +101,7 @@ def getWords(language, inputLetters, givenWord):#takes in full dictionary and us
     else:
         result={}
         # result = [givenWord]
-    #Loops through the whole dictionary. 1 is the length of the dictionary
+        #Loops through the whole dictionary. 1 is the length of the dictionary
         for letter in dictionary:
             for dictWord in dictionary[letter]:
             #Loops through each word while it is using valid letters
@@ -171,12 +169,13 @@ def createDictDict():
 
 def createDict(language):
     dictDict=createDictDict()
+    lines=""
     if language=="American":
-        text_file = open("/usr/share/dict/american-english", "r")
+        text_file = open("./dictionaries/american-english", "r")
         lines = text_file.readlines()
         text_file.close()
     elif language=="British":
-        text_file = open("/usr/share/dict/british-english", "r")
+        text_file = open("./dictionaries/british-english", "r")
         lines = text_file.readlines()
         text_file.close()
     for word in lines:
